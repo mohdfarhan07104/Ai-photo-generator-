@@ -1,0 +1,29 @@
+import openai
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
+
+# Set API keys
+openai.api_key = "your_openai_api_key"
+TELEGRAM_BOT_TOKEN = "your_telegram_bot_token"
+
+def generate_image(update: Update, context: CallbackContext):
+    user_prompt = " ".join(context.args)
+    if not user_prompt:
+        update.message.reply_text("Please provide a prompt for image generation.")
+        return
+
+    response = openai.Image.create(prompt=user_prompt, n=1, size="1024x1024")
+    image_url = response["data"][0]["url"]
+    
+    update.message.reply_photo(photo=image_url)
+
+def main():
+    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
+    dp = updater.dispatcher
+    dp.add_handler(CommandHandler("generate", generate_image))
+    
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == "__main__":
+    main()
